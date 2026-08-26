@@ -19,12 +19,62 @@
     overflow:hidden; -webkit-font-smoothing:none;
   }
   #app{display:flex; gap:10px; padding:10px; height:100%; align-items:stretch}
-  #stage{position:relative; display:flex; align-items:center; justify-content:center}
+  #stage{position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center}
   canvas{
     display:block; background:#03040a; border:2px solid var(--line);
     image-rendering:pixelated; max-width:100%; max-height:100%;
     box-shadow:0 0 0 1px #000, 0 0 40px rgba(111,227,255,.08) inset;
   }
+  #hbar{
+    width:800px; max-width:100%; margin-top:8px; background:var(--panel); border:2px solid var(--line);
+    display:flex; align-items:stretch; gap:8px; padding:7px; font-size:11px; position:relative;
+  }
+  #hbar.off{opacity:.45}
+  .hpor{width:52px; min-width:52px; border:1px solid var(--line); background:#05070e center/cover no-repeat; image-rendering:pixelated}
+  .hinfo{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; justify-content:center}
+  .hname{display:flex; align-items:baseline; gap:7px; letter-spacing:1px}
+  .hname b{font-size:13px} .hname span{color:var(--dim); font-size:9px; letter-spacing:1px}
+  .hname i{margin-left:auto; font-style:normal; color:var(--amber); font-size:10px}
+  .hb{position:relative; height:11px; background:#05070e; border:1px solid #16203a}
+  .hb>div{height:100%; width:0; transition:width .12s}
+  .hb>span{position:absolute; inset:0; text-align:center; font-size:8.5px; line-height:11px; letter-spacing:1px; color:#dfe9ff}
+  .hb-l{background:linear-gradient(90deg,#3f9b57,#7dff9b)}
+  .hb-e{background:linear-gradient(90deg,#2f6f9b,#6fe3ff)}
+  .hb-x{background:linear-gradient(90deg,#8a5c1e,#ffb347)}
+  .hb.xp{height:7px} .hb.xp>span{line-height:7px; font-size:7.5px}
+  .hq{position:relative; overflow:hidden; width:104px; min-width:104px; background:var(--panel2);
+      border:1px solid var(--line); color:var(--txt); font-family:inherit; font-size:9px; cursor:pointer; padding:4px; letter-spacing:.5px}
+  .hq b{display:block; font-size:9.5px; line-height:1.2}
+  .hq em{display:inline-block; margin-top:4px; font-style:normal; color:var(--cyan); border:1px solid #2f4468; padding:0 4px; font-size:8.5px}
+  .hq.rdy{border-color:var(--cyan); color:var(--cyan)}
+  .hq .cd{position:absolute; left:0; bottom:0; width:100%; background:rgba(0,0,0,.72); pointer-events:none}
+  .hup{width:112px; min-width:112px; display:flex; flex-direction:column; gap:3px; justify-content:center}
+  .ub{background:var(--panel2); border:1px solid var(--line); color:var(--dim); font-family:inherit;
+      font-size:9px; padding:3px; cursor:pointer; letter-spacing:.5px}
+  .ub.can{border-color:var(--amber); color:var(--amber)}
+  .ub i{font-style:normal}
+  .pts{font-size:8.5px; color:var(--dim); text-align:center; letter-spacing:.5px}
+  .hhint{position:absolute; right:8px; bottom:-15px; font-size:8.5px; color:var(--dim); letter-spacing:.5px}
+  #pick{
+    position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center;
+    background:rgba(3,4,10,.94); gap:14px; z-index:5;
+  }
+  #pick.on{display:flex}
+  #pick h2{font-size:20px; letter-spacing:6px; color:var(--amber)}
+  #pick small{color:var(--dim); font-size:10px; letter-spacing:1px}
+  #picks{display:flex; gap:12px}
+  .hcard{
+    width:206px; background:var(--panel2); border:2px solid var(--line); padding:11px; cursor:pointer;
+    font-family:inherit; color:var(--txt); text-align:left; transition:border-color .1s, background .1s;
+  }
+  .hcard:hover{border-color:var(--amber); background:#151d31}
+  .hcard .hi{width:44px; height:44px; margin-bottom:7px; background:#05070e center/cover no-repeat; border:1px solid var(--line); image-rendering:pixelated}
+  .hcard h3{font-size:13px; letter-spacing:2px; margin-bottom:1px}
+  .hcard h4{font-size:8.5px; letter-spacing:1px; color:var(--dim); font-weight:normal; margin-bottom:7px}
+  .hcard p{font-size:9.5px; line-height:1.42; color:var(--dim); margin-bottom:5px}
+  .hcard p b{color:var(--txt); font-weight:normal}
+  .hcard .tag{font-size:8px; letter-spacing:1px; color:var(--amber)}
+  .hcard .st{font-size:8.5px; color:var(--dim); letter-spacing:.5px; border-top:1px solid var(--line); padding-top:5px; margin-top:5px}
   #panel{
     width:322px; min-width:322px; background:var(--panel); border:2px solid var(--line);
     display:flex; flex-direction:column; overflow:hidden; font-size:12px;
@@ -114,7 +164,28 @@
 <div id="app">
   <div id="stage">
     <canvas id="cv" width="800" height="680"></canvas>
+    <div id="hbar" class="off">
+      <div class="hpor" id="h-por"></div>
+      <div class="hinfo">
+        <div class="hname"><b id="h-name">SIN HÉROE</b><span id="h-title">elige en el altar</span><i id="h-lvl">Nv 1</i></div>
+        <div class="hb"><div class="hb-l" id="h-hp"></div><span id="h-hptx">—</span></div>
+        <div class="hb"><div class="hb-e" id="h-en"></div><span id="h-entx">—</span></div>
+        <div class="hb xp"><div class="hb-x" id="h-xp"></div><span id="h-xptx">—</span></div>
+      </div>
+      <button class="hq" id="h-q"><b id="h-qn">—</b><em>Q</em><div class="cd" id="h-qcd"></div></button>
+      <div class="hup">
+        <button class="ub" id="h-up-q">HABILIDAD <i id="h-qlv">1</i>/5</button>
+        <button class="ub" id="h-up-a">AURA <i id="h-alv">1</i>/5</button>
+        <div class="pts" id="h-pts">sin puntos</div>
+      </div>
+      <div class="hhint">WASD o clic derecho para mover · Q habilidad · el altar cambia de héroe</div>
+    </div>
     <div id="ov"><h2 id="ovt">EL CASTILLO HA CAÍDO</h2><p id="ovp"></p><button id="ovb">REINICIAR</button></div>
+    <div id="pick">
+      <h2>ELIGE TU HÉROE</h2>
+      <div id="picks"></div>
+      <small>Podrás relevarlo en el altar del patio interior entre oleadas.</small>
+    </div>
   </div>
   <div id="panel">
     <div id="brand">
@@ -141,9 +212,9 @@
     </div>
     <div class="ttl">Habilidades activas</div>
     <div class="abil">
-      <button class="ab" id="ab0"><div class="abn" id="abi0"></div>ECLIPSE<br><span>Q</span><div class="cd" id="cd0"></div></button>
-      <button class="ab" id="ab1"><div class="abn" id="abi1"></div>SUPERNOVA<br><span>W</span><div class="cd" id="cd1"></div></button>
-      <button class="ab" id="ab2"><div class="abn" id="abi2"></div>ENFOQUE<br><span>E</span><div class="cd" id="cd2"></div></button>
+      <button class="ab" id="ab0"><div class="abn" id="abi0"></div>ECLIPSE<br><span>Z</span><div class="cd" id="cd0"></div></button>
+      <button class="ab" id="ab1"><div class="abn" id="abi1"></div>SUPERNOVA<br><span>X</span><div class="cd" id="cd1"></div></button>
+      <button class="ab" id="ab2"><div class="abn" id="abi2"></div>ENFOQUE<br><span>C</span><div class="cd" id="cd2"></div></button>
     </div>
     <div class="scroll">
       <div class="ttl">Patio interior · producción</div>
@@ -327,6 +398,7 @@ function newGame(){
     phase:'prep', prep:9, spawnQ:[], spawnT:0,
     towers:[], units:[], enemies:[], shots:[], fx:[], beams:[],
     workshops:[], folk:[], stock:{rune:2, opt:1}, alarm:false, bellT:0, hired:0, lost:0,
+    hero:null, banners:[], smoke:[], rays:[],
     build:null, sel:null, paused:false, over:false, won:false,
     t:0, moonA:0, moonB:0, eclipse:0, nova:0, focus:0,
     prism:0, refin:0, oilRate:0, msg:[],
@@ -335,6 +407,7 @@ function newGame(){
   };
   buildGrid();
   initInterior();
+  GRID[ALTAR.cy][ALTAR.cx] = 2; markGround();     // el altar de héroes ocupa su casilla
   log('El castillo despierta. La luna artificial gira sobre el núcleo.');
   log('Asigna aldeanos a los talleres del patio con un <b>clic</b>. Botón derecho para relevarlos.');
   log('Construye <b>antorchas</b> para ver, y mata en la sombra para <b>esencia</b>.');
@@ -389,6 +462,7 @@ function refreshSources(){
     if(t.type==='candle'&& G.oil<=0) continue;
     SRC.push({x:t.x, y:t.y, r:t.def.light*prismMul(), p:t.type==='torch'?1.35:1.15, o:t});
   }
+  for(const b of G.banners) SRC.push({x:b.x, y:b.y, r:b.r, p:1.25, o:b});
 }
 function lightAt(x,y,exc){
   if(G.nova>0) return 1;
@@ -409,6 +483,10 @@ function lightAt(x,y,exc){
 }
 /* El aura del Devorador apaga la luz a su alrededor */
 function darken(x,y,l){
+  for(let i=0;i<G.smoke.length;i++){               // bomba de humo de la Alquimista
+    const k=G.smoke[i], d=dist(x,y,k.x,k.y);
+    if(d<k.r) l *= clamp(d/k.r,0,1)*0.5;
+  }
   for(let i=0;i<G.enemies.length;i++){
     const e=G.enemies[i];
     if(e.type!=='boss'||e.dead) continue;
@@ -534,7 +612,8 @@ function castBeam(x,y,a,len,dmg,depth,fromM){
   if(hit){
     fxSpark(hit.x,hit.y,'#6fe3ff',2);
     const lv = hit.lvl||0;                       // lentes pulidas montadas por el Pulidor
-    const k = 0.62*(1+lv*0.18), L = len*0.75*(1+lv*0.12);
+    const tuned = hit.tuned ? auraHas('beam') : 1;   // ...y el Maestro Óptico lo afina
+    const k = 0.62*(1+lv*0.18), L = len*0.75*(1+lv*0.12)*tuned;
     castBeam(hit.x,hit.y,hit.ang+0.42,L,dmg*k,depth+1,hit);
     castBeam(hit.x,hit.y,hit.ang-0.42,L,dmg*k,depth+1,hit);
   }
@@ -660,6 +739,7 @@ function updateEnemies(dt){
     if(e.type==='boss'){
       for(const t of G.towers){
         if(t.def.lightSource && !t.dead && dist(t.x,t.y,e.x,e.y)<e.aura){
+          if(t.shield>0){ fxSpark(t.x,t.y,'#ffd27a',1); continue; }
           t.doused = 1.4; t.hp -= 16*dt;
           if(t.hp<=0) killTower(t,'devorada por la oscuridad');
         }
@@ -693,6 +773,7 @@ function updateEnemies(dt){
         const a = Math.atan2(t.y-e.y,t.x-e.x);
         const d = dist(e.x,e.y,t.x,t.y);
         if(d>16){ e.x+=Math.cos(a)*spd*dt; e.y+=Math.sin(a)*spd*dt; }
+        else if(t.shield>0){ fxSpark(t.x,t.y,'#ffd27a',1); }
         else { t.hp -= 20*dt; t.flash=0.1; if(t.hp<=0) killTower(t,'consumida por las polillas'); }
         continue;
       } else e.mode='path';
@@ -729,7 +810,10 @@ function kill(e){
   if(e.dead) return;
   e.dead = true; G.kills++;
   const l = lightAt(e.x,e.y), b = e.def.bounty;
-  if(l < DUSK){ G.ess += b.ess || 3; fxText(e.x,e.y,'+'+(b.ess||3)+' ESENCIA','#b07cff'); }
+  if(l < DUSK){
+    const g = Math.round((b.ess||3) * auraHas('ess'));
+    G.ess += g; fxText(e.x,e.y,'+'+g+' ESENCIA','#b07cff');
+  }
   else        { G.oil += b.oil || 3; fxText(e.x,e.y,'+'+(b.oil||3)+' ACEITE','#ffb347'); }
   if(e.type==='boss'){
     G.cry += b.cry; G.ess += b.ess; G.oil += b.oil;
@@ -738,6 +822,10 @@ function kill(e){
     log('<b>El Devorador de Luz ha caído.</b> Cristales de Prisma recuperados.');
   }
   fxSpark(e.x,e.y,e.def.col,8);
+  const h=G.hero;                                  // experiencia por bajas a su vera
+  if(h && !h.down && dist(e.x,e.y,h.x,h.y) < 230){
+    heroXP(e.type==='boss' ? 140 : (e.type==='golem' ? 22 : 12));
+  }
 }
 function killTower(t,why){
   t.dead = true; if(t.cx!=null){ GRID[t.cy][t.cx]=0; markGround(); }
@@ -915,7 +1003,7 @@ function updateWorkshops(dt){
     w.workers = G.folk.filter(v=>v.job===w.job && v.st==='work' && dist(v.x,v.y,w.x,w.y)<32).length;
     w.state = G.alarm ? 'ALARMA' : (w.panic ? 'PÁNICO' : (w.workers? 'PRODUCE' : (w.staff?'EN CAMINO':'VACÍO')));
     if(G.alarm || w.panic || w.workers===0) continue;
-    w.prog += (w.workers/w.def.time)*dt;
+    w.prog += (w.workers/w.def.time)*dt*auraHas('craft');
     if(w.prog>=1){ w.prog -= 1; w.queue++; w.made++; fxText(w.x,w.y-24,w.def.out,w.def.col); }
   }
   dispatch();
@@ -1007,7 +1095,10 @@ function walk(v,tx,ty,spd,dt){
     if(e){ const dd=Math.max(12,dist(v.x,v.y,e.x,e.y)); ax += (v.x-e.x)/dd*1.5; ay += (v.y-e.y)/dd*1.5; }
   }
   const m = Math.hypot(ax,ay)||1;
-  v.x += ax/m*spd*dt; v.y += ay/m*spd*dt;
+  let sp = spd;
+  const A = auraOf();                              // estandarte del Comandante
+  if(A && A.walk && dist(v.x,v.y,G.hero.x,G.hero.y)<=A.r) sp *= A.walk;
+  v.x += ax/m*sp*dt; v.y += ay/m*sp*dt;
   v.ang = Math.atan2(ay,ax); v.step += spd*dt;
   v.x = clamp(v.x,8,W-8); v.y = clamp(v.y,8,H-8);
   return d<4;
@@ -1044,7 +1135,8 @@ function militia(v,dt){
     if(d > 110) walk(v,e.x,e.y,70,dt);
     v.cd -= dt;
     if(v.cd<=0 && d < 150){
-      v.cd = 0.9;
+      const A=auraOf();
+      v.cd = 0.9 / ((A && A.fire && dist(v.x,v.y,G.hero.x,G.hero.y)<=A.r) ? A.fire : 1);
       const a = v.ang + rnd(-0.09,0.09);
       G.shots.push({x:v.x,y:v.y,vx:Math.cos(a)*430,vy:Math.sin(a)*430,dmg:11,life:0.8,col:'#dfe9ff'});
     }
@@ -1065,6 +1157,239 @@ function toggleAlarm(force){
     for(const v of G.folk) v.st = v.job ? 'back' : 'idle';
     log('Campana en silencio: los aldeanos vuelven al aceite y a la piedra rúnica.');
   }
+}
+
+/* ============================================================
+   HÉROES: elección, control, combate, niveles y auras
+   ============================================================ */
+const ALTAR = { cx:8, cy:8, x:340, y:340 };
+const HEROES = {
+  valerius:{
+    name:'VALERIUS', title:'COMANDANTE DE LA GUARDIA', icon:'ic_shield', col:'#ffd27a',
+    hp:230, en:100, spd:116, weapon:'espada', wrange:76, dmg:27, rate:0.72, vision:150,
+    passive:'Los portadores marchan más rápido y las ballestas cercanas disparan más deprisa.',
+    aura:lv=>({r:150+lv*22, walk:1+0.20*lv/1, fire:1+0.20*lv}),
+    auraTxt:lv=>'Portadores +'+(20*lv)+'% de marcha · ballestas +'+(20*lv)+'% de cadencia (radio '+(150+lv*22)+').',
+    q:'ESTANDARTE DE LUZ', qcost:35, qcd:18,
+    qTxt:lv=>'Ilumina '+(10+lv*2)+' s un radio de '+(140+lv*18)+' y escuda las estructuras dentro.'
+  },
+  vespera:{
+    name:'VESPERA', title:'ALQUIMISTA DE SOMBRAS', icon:'ic_flask', col:'#c9a2ff',
+    hp:165, en:135, spd:126, weapon:'báculo', wrange:132, dmg:17, rate:0.55, vision:172,
+    passive:'Más Esencia de Penumbra y talleres interiores mucho más rápidos.',
+    aura:lv=>({r:9999, ess:1+0.30*lv, craft:1+1.0*lv}),
+    auraTxt:lv=>'Esencia +'+(30*lv)+'% · elaboración de los talleres ×'+(1+lv)+'.',
+    q:'BOMBA DE HUMO UMBRÍO', qcost:40, qcd:16,
+    qTxt:lv=>'Apaga las luces '+(5+lv)+' s en un radio de '+(105+lv*15)+' y aturde '+(2+lv*0.5).toFixed(1)+' s.'
+  },
+  ignis:{
+    name:'IGNIS', title:'MAESTRO ÓPTICO', icon:'ic_blade', col:'#8fe6ff',
+    hp:185, en:120, spd:120, weapon:'ballesta', wrange:162, dmg:20, rate:0.5, vision:190,
+    passive:'Los Espejos Prismáticos que orienta ganan alcance de haz.',
+    aura:lv=>({r:130+lv*26, beam:1+0.50*lv}),
+    auraTxt:lv=>'Espejos afinados: +'+(50*lv)+'% de alcance de haz (radio '+(130+lv*26)+').',
+    q:'RAYO DE INFECCIÓN SOLAR', qcost:45, qcd:14,
+    qTxt:lv=>'Haz recto de '+(280+lv*40)+' que quema en línea ('+(30+lv*14)+' de daño + ignición).'
+  }
+};
+function auraOf(){ const h=G.hero; return h&&!h.down ? h.def.aura(h.alv) : null; }
+function auraHas(k){ const a=auraOf(); return a&&a[k] ? a[k] : 1; }
+function inAura(x,y){
+  const h=G.hero, a=auraOf(); if(!a) return false;
+  return dist(x,y,h.x,h.y) <= a.r;
+}
+
+function pickHero(id){
+  const d = HEROES[id];
+  const prev = G.hero;
+  G.hero = { id, def:d, x:CORE.x-70, y:CORE.y+54, hp:d.hp, mhp:d.hp, en:d.en, men:d.en,
+    lvl: prev?prev.lvl:1, xp: prev?prev.xp:0, xpNext: prev?prev.xpNext:70,
+    pts: prev?prev.pts:0, qlv:1, alv:1, cd:0, atk:0, down:0, ang:-Math.PI/2,
+    kx:0, ky:0, dest:null, step:0, swing:0 };
+  $('pick').classList.remove('on');
+  if(G.paused && !G.over) G.paused=false;
+  log('<b>'+d.name+'</b>, '+d.title.toLowerCase()+', toma el mando del castillo.');
+  fxRing(G.hero.x,G.hero.y,70,d.col);
+  buildHeroBar();
+}
+function openPicker(){
+  const wrap=$('picks'); wrap.innerHTML='';
+  for(const id in HEROES){
+    const d=HEROES[id];
+    const b=document.createElement('button'); b.className='hcard';
+    b.innerHTML =
+      '<div class="hi" style="background-image:url('+ART[d.icon]+')"></div>'+
+      '<h3 style="color:'+d.col+'">'+d.name+'</h3><h4>'+d.title+'</h4>'+
+      '<p><span class="tag">PASIVA</span><br>'+d.passive+'</p>'+
+      '<p><span class="tag">Q · '+d.q+'</span><br>'+d.qTxt(1)+'</p>'+
+      '<div class="st">Vida '+d.hp+' · Energía '+d.en+' · '+d.weapon+' ('+d.wrange+')</div>';
+    b.onclick=()=>pickHero(id);
+    wrap.appendChild(b);
+  }
+  $('pick').classList.add('on');
+}
+
+/* ---- control y combate --------------------------------------------------- */
+function updateHero(dt){
+  const h=G.hero; if(!h) return;
+  if(h.down>0){                                  // inconsciente: reaparece en el taller
+    h.down-=dt;
+    if(h.down<=0){
+      const w=G.workshops[0]||{x:CORE.x,y:CORE.y};
+      h.x=w.x; h.y=w.y+26; h.hp=h.mhp*0.6; h.en=h.men*0.5; h.dest=null;
+      fxRing(h.x,h.y,60,h.def.col); log('<b>'+h.def.name+'</b> vuelve en sí en el taller interior.');
+    }
+    return;
+  }
+  h.en = Math.min(h.men, h.en + (inWall(h.x,h.y)?9:5)*dt);
+  h.hp = Math.min(h.mhp, h.hp + 1.6*dt);
+  if(h.cd>0) h.cd-=dt;
+  if(h.swing>0) h.swing-=dt;
+
+  // movimiento: teclas o destino marcado con el ratón
+  let vx=h.kx, vy=h.ky;
+  if(vx||vy){ h.dest=null; }
+  else if(h.dest){
+    const d=dist(h.x,h.y,h.dest.x,h.dest.y);
+    if(d<6) h.dest=null; else { vx=(h.dest.x-h.x)/d; vy=(h.dest.y-h.y)/d; }
+  }
+  const m=Math.hypot(vx,vy);
+  if(m>0){
+    const sp=h.def.spd*(inWall(h.x,h.y)?1.1:1);
+    h.x=clamp(h.x+vx/m*sp*dt, 10, W-10);
+    h.y=clamp(h.y+vy/m*sp*dt, 10, H-10);
+    h.ang=Math.atan2(vy,vx); h.step+=sp*dt;
+  }
+
+  // ataque automático al enemigo más cercano en su campo de visión
+  h.atk-=dt;
+  const e=nearestEnemy(h.x,h.y,h.def.vision);
+  if(e){
+    if(!m) h.ang=Math.atan2(e.y-h.y,e.x-h.x);
+    const d=dist(h.x,h.y,e.x,e.y);
+    if(h.atk<=0 && d<h.def.wrange){
+      h.atk=h.def.rate;
+      const dmg=h.def.dmg*(1+(h.lvl-1)*0.12);
+      if(h.def.weapon==='espada'){ hurt(e,dmg,'hero'); h.swing=0.18; fxSpark(e.x,e.y,h.def.col,4); }
+      else {
+        const a=Math.atan2(e.y-h.y,e.x-h.x);
+        G.shots.push({x:h.x,y:h.y,vx:Math.cos(a)*420,vy:Math.sin(a)*420,dmg,life:0.9,col:h.def.col});
+      }
+    }
+  }
+  // los invasores muerden al héroe si pelea en primera línea
+  for(const en of G.enemies){
+    if(en.dead || dist(en.x,en.y,h.x,h.y)>34) continue;
+    en.hcd=(en.hcd||0)-dt;
+    if(en.hcd<=0){
+      en.hcd=1.1; h.hp -= en.def.dmg*(en.type==='boss'?4:3.2);
+      fxSpark(h.x,h.y,'#ff5f6d',4); G.shake=Math.max(G.shake,3);
+      if(h.hp<=0){ h.hp=0; h.down=20; h.dest=null; h.kx=h.ky=0;
+        fxRing(h.x,h.y,80,'#ff5f6d'); G.shake=10;
+        log('<b>'+h.def.name+' ha caído inconsciente.</b> Vuelve en 20 s.'); break; }
+    }
+  }
+  // Ignis afina los espejos que tiene a su alcance (el aura muere con él)
+  const a = h.id==='ignis' ? auraOf() : null;
+  for(const t of G.towers) if(t.type==='mirror')
+    t.tuned = !!(a && !t.dead && dist(t.x,t.y,h.x,h.y)<=a.r);
+}
+function heroXP(n){
+  const h=G.hero; if(!h) return;
+  h.xp+=n;
+  while(h.xp>=h.xpNext){
+    h.xp-=h.xpNext; h.lvl++; h.pts++;
+    h.xpNext=Math.round(70+h.lvl*48);
+    h.mhp=Math.round(h.def.hp*(1+(h.lvl-1)*0.10)); h.hp=h.mhp;
+    h.men=Math.round(h.def.en*(1+(h.lvl-1)*0.08)); h.en=h.men;
+    fxText(h.x,h.y-30,'¡NIVEL '+h.lvl+'!',h.def.col); fxRing(h.x,h.y,70,h.def.col);
+    log('<b>'+h.def.name+' alcanza el nivel '+h.lvl+'.</b> Tienes un punto de mejora.');
+  }
+}
+function heroUp(what){
+  const h=G.hero; if(!h||h.pts<=0) return;
+  const cur = what==='q'?h.qlv:h.alv;
+  if(cur>=5){ log('Esa mejora ya está al máximo.'); return; }
+  h.pts--; if(what==='q') h.qlv++; else h.alv++;
+  fxRing(h.x,h.y,54,h.def.col);
+  log(what==='q' ? 'Habilidad mejorada a nivel '+h.qlv+'.' : 'Aura mejorada a nivel '+h.alv+'.');
+}
+
+/* ---- habilidad activa ---------------------------------------------------- */
+function heroCast(){
+  const h=G.hero;
+  if(!h || h.down>0 || G.over || G.paused) return;
+  if(h.cd>0){ return; }
+  if(h.en < h.def.qcost){ log('Energía insuficiente para '+h.def.q+'.'); return; }
+  h.en -= h.def.qcost; h.cd = h.def.qcd;
+  const mx=G.mouse.x>0?G.mouse.x:h.x+Math.cos(h.ang)*80,
+        my=G.mouse.x>0?G.mouse.y:h.y+Math.sin(h.ang)*80;
+  if(h.id==='valerius'){
+    const r=140+h.qlv*18, dur=10+h.qlv*2;
+    G.banners.push({x:h.x,y:h.y,r,t:dur,max:dur});
+    for(const t of G.towers) if(!t.dead && dist(t.x,t.y,h.x,h.y)<r+20) t.shield=dur;
+    fxRing(h.x,h.y,r,'#ffd27a'); log('<b>Estandarte de Luz</b> plantado: '+dur+' s de luz y escudo.');
+  } else if(h.id==='vespera'){
+    const r=105+h.qlv*15, dur=5+h.qlv, st=2+h.qlv*0.5;
+    G.smoke.push({x:mx,y:my,r,t:dur,max:dur});
+    for(const e of G.enemies) if(!e.dead && dist(e.x,e.y,mx,my)<r){ e.stun=Math.max(e.stun,st); fxSpark(e.x,e.y,'#c9a2ff',3); }
+    fxRing(mx,my,r,'#c9a2ff'); log('<b>Bomba de Humo Umbrío</b>: la zona queda a oscuras '+dur+' s.');
+  } else {
+    const len=280+h.qlv*40, dmg=30+h.qlv*14;
+    const a=Math.atan2(my-h.y,mx-h.x);
+    const x2=h.x+Math.cos(a)*len, y2=h.y+Math.sin(a)*len;
+    G.rays.push({x1:h.x,y1:h.y,x2,y2,t:0.5,max:0.5});
+    let n=0;
+    for(const e of G.enemies){
+      if(e.dead || segDist(e.x,e.y,h.x,h.y,x2,y2) > e.r+16) continue;
+      hurt(e,dmg,'hero'); e.burn=Math.max(e.burn,2.5); n++;
+    }
+    G.shake=Math.max(G.shake,6);
+    log('<b>Rayo de Infección Solar</b>: '+n+' invasores ardiendo.');
+  }
+  buildHeroBar();
+}
+/* ---- efectos persistentes del héroe -------------------------------------- */
+function updateHeroFx(dt){
+  for(const b of G.banners) b.t-=dt;
+  G.banners = G.banners.filter(b=>b.t>0);
+  for(const k of G.smoke) k.t-=dt;
+  G.smoke = G.smoke.filter(k=>k.t>0);
+  for(const r of G.rays) r.t-=dt;
+  G.rays = G.rays.filter(r=>r.t>0);
+  for(const t of G.towers) if(t.shield>0) t.shield-=dt;
+}
+
+/* ---- ficha inferior ------------------------------------------------------ */
+function buildHeroBar(){
+  const h=G.hero, bar=$('hbar');
+  bar.classList.toggle('off', !h);
+  if(!h) return;
+  $('h-por').style.backgroundImage='url('+ART[h.def.icon]+')';
+  $('h-name').textContent=h.def.name; $('h-name').style.color=h.def.col;
+  $('h-title').textContent=h.def.title;
+  $('h-qn').textContent=h.def.q;
+  $('h-q').title=h.def.qTxt(h.qlv)+' · cuesta '+h.def.qcost+' de energía';
+  $('h-up-a').title=h.def.auraTxt(h.alv);
+}
+function updateHeroBar(){
+  const h=G.hero; if(!h) return;
+  $('h-hp').style.width=(h.hp/h.mhp*100)+'%';
+  $('h-hptx').textContent = h.down>0 ? 'INCONSCIENTE '+h.down.toFixed(0)+'s'
+                                     : 'VIDA '+Math.ceil(h.hp)+'/'+h.mhp;
+  $('h-en').style.width=(h.en/h.men*100)+'%';
+  $('h-entx').textContent='ENERGÍA '+Math.floor(h.en)+'/'+h.men;
+  $('h-xp').style.width=(h.xp/h.xpNext*100)+'%';
+  $('h-xptx').textContent='XP '+Math.floor(h.xp)+'/'+h.xpNext;
+  $('h-lvl').textContent='Nv '+h.lvl;
+  $('h-qcd').style.height=(h.cd/h.def.qcd*100)+'%';
+  $('h-q').classList.toggle('rdy', h.cd<=0 && h.en>=h.def.qcost && h.down<=0);
+  $('h-qlv').textContent=h.qlv; $('h-alv').textContent=h.alv;
+  const can=h.pts>0;
+  $('h-up-q').classList.toggle('can', can && h.qlv<5);
+  $('h-up-a').classList.toggle('can', can && h.alv<5);
+  $('h-pts').textContent = h.pts>0 ? h.pts+' punto'+(h.pts>1?'s':'')+' por gastar' : 'sin puntos';
+  $('h-pts').style.color = h.pts>0 ? 'var(--amber)' : 'var(--dim)';
 }
 
 /* ============================ RENDER ==================================== */
@@ -1465,6 +1790,110 @@ function drawHud(){
     ctx.fillText(zoneOf(l), G.mouse.x+14, G.mouse.y-10);
   }
 }
+function drawAltar(){
+  const x=ALTAR.x, y=ALTAR.y, h=G.hero;
+  ctx.save(); ctx.translate(x,y);
+  ctx.fillStyle='rgba(8,12,22,.75)'; ctx.fillRect(-15,-13,30,26);
+  ctx.strokeStyle = h ? h.def.col : '#7dff9b'; ctx.lineWidth=2; ctx.strokeRect(-15,-13,30,26);
+  ctx.fillStyle = h ? h.def.col : '#7dff9b';
+  ctx.fillRect(-15,-13,30,3);
+  const p=0.6+Math.sin(G.t*2.4)*0.25;
+  ctx.globalAlpha=p; ctx.font='13px monospace'; ctx.textAlign='center';
+  ctx.fillText('⚱', 0, 6);
+  ctx.globalAlpha=1;
+  if(G.phase==='prep'){ ctx.fillStyle='rgba(125,255,155,.75)'; ctx.font='8px "Courier New",monospace';
+    ctx.fillText('ALTAR', 0, -17); }
+  ctx.restore();
+}
+function drawHeroFx(){
+  for(const b of G.banners){                       // estandarte de luz
+    const k=b.t/b.max;
+    ctx.save(); ctx.strokeStyle='rgba(255,210,122,'+(0.25+k*0.3)+')'; ctx.lineWidth=2;
+    ctx.setLineDash([7,7]); ctx.lineDashOffset=-G.t*18;
+    ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,6.283); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle='#8a5c1e'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x,b.y-26); ctx.stroke();
+    ctx.fillStyle='#ffd27a'; ctx.fillRect(b.x,b.y-26,15,11);
+    ctx.fillStyle='#fff6d0'; ctx.fillRect(b.x+5,b.y-23,5,5);
+    ctx.fillStyle='rgba(255,210,122,.85)'; ctx.font='8px "Courier New",monospace'; ctx.textAlign='center';
+    ctx.fillText(b.t.toFixed(0)+'s', b.x, b.y+12);
+    ctx.restore();
+  }
+  for(const k of G.smoke){                         // humo umbrío
+    const q=k.t/k.max;
+    ctx.save();
+    const g=ctx.createRadialGradient(k.x,k.y,4,k.x,k.y,k.r);
+    g.addColorStop(0,'rgba(28,16,44,'+(0.85*q+0.1)+')'); g.addColorStop(1,'rgba(28,16,44,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(k.x,k.y,k.r,0,6.283); ctx.fill();
+    ctx.strokeStyle='rgba(201,162,255,'+(0.2+q*0.35)+')'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(k.x,k.y,k.r,0,6.283); ctx.stroke();
+    ctx.restore();
+  }
+  for(const r of G.rays){                          // rayo de infección solar
+    const q=r.t/r.max;
+    ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
+    ctx.strokeStyle='rgba(255,240,180,'+(0.55*q)+')'; ctx.lineWidth=22*q+4;
+    ctx.beginPath(); ctx.moveTo(r.x1,r.y1); ctx.lineTo(r.x2,r.y2); ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,'+(0.95*q)+')'; ctx.lineWidth=5*q+1.5;
+    ctx.beginPath(); ctx.moveTo(r.x1,r.y1); ctx.lineTo(r.x2,r.y2); ctx.stroke();
+    ctx.restore();
+  }
+  // vínculo del Maestro Óptico con los espejos que afina
+  const h=G.hero;
+  if(h && h.id==='ignis' && !h.down){
+    ctx.save(); ctx.strokeStyle='rgba(143,230,255,.35)'; ctx.lineWidth=1; ctx.setLineDash([3,5]);
+    for(const t of G.towers) if(t.tuned){ ctx.beginPath(); ctx.moveTo(h.x,h.y); ctx.lineTo(t.x,t.y); ctx.stroke(); }
+    ctx.setLineDash([]); ctx.restore();
+  }
+}
+function drawHero(){
+  const h=G.hero; if(!h) return;
+  const c=h.def.col;
+  if(h.down>0){                                    // inconsciente
+    ctx.save(); ctx.translate(h.x,h.y); ctx.globalAlpha=.75;
+    ctx.fillStyle='#3a2430'; ctx.beginPath(); ctx.ellipse(0,2,12,6,0,0,6.283); ctx.fill();
+    ctx.strokeStyle='#ff5f6d'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle='#ff5f6d'; ctx.font='bold 9px "Courier New",monospace'; ctx.textAlign='center';
+    ctx.fillText(h.down.toFixed(0)+'s', 0, -12);
+    ctx.restore(); return;
+  }
+  const A=auraOf();
+  if(A && A.r<900){                                // aura pasiva
+    ctx.save(); ctx.strokeStyle=c.replace(')',',.16)').replace('#','rgba(');
+    ctx.strokeStyle='rgba(255,255,255,.10)'; ctx.lineWidth=1; ctx.setLineDash([4,8]);
+    ctx.beginPath(); ctx.arc(h.x,h.y,A.r,0,6.283); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+  }
+  ctx.save(); ctx.translate(h.x,h.y);
+  ctx.fillStyle='rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(0,9,9,4,0,0,6.283); ctx.fill();
+  const bob=Math.sin(h.step*0.28)*1.4;
+  ctx.translate(0,bob);
+  ctx.save(); ctx.rotate(h.ang+Math.PI/2);
+  ctx.fillStyle='#0d1220'; ctx.beginPath();          // capa
+  ctx.moveTo(0,-11); ctx.lineTo(8,9); ctx.lineTo(0,5); ctx.lineTo(-8,9); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle=c; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle=c; ctx.fillRect(-2.5,-9,5,5);        // yelmo
+  // arma
+  ctx.strokeStyle='#dfe9ff'; ctx.lineWidth=2;
+  if(h.def.weapon==='espada'){
+    const sw=h.swing>0 ? 0.9 : 0;
+    ctx.save(); ctx.rotate(-0.5+sw);
+    ctx.beginPath(); ctx.moveTo(7,-2); ctx.lineTo(7,-16); ctx.stroke(); ctx.restore();
+  } else if(h.def.weapon==='ballesta'){
+    ctx.beginPath(); ctx.moveTo(6,-4); ctx.lineTo(6,-13); ctx.moveTo(2,-10); ctx.lineTo(10,-10); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(7,-3); ctx.lineTo(7,-15); ctx.stroke();
+    ctx.fillStyle=c; ctx.beginPath(); ctx.arc(7,-16,3.2,0,6.283); ctx.fill();
+  }
+  ctx.restore();
+  ctx.restore();
+  // vida y nivel
+  ctx.fillStyle='#000'; ctx.fillRect(h.x-14,h.y-19,28,3);
+  ctx.fillStyle='#7dff9b'; ctx.fillRect(h.x-14,h.y-19,28*clamp(h.hp/h.mhp,0,1),3);
+  ctx.fillStyle=c; ctx.font='8px "Courier New",monospace'; ctx.textAlign='center';
+  ctx.fillText(h.def.name+' '+h.lvl, h.x, h.y-22);
+  if(h.dest){ ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(h.dest.x,h.dest.y,6,0,6.283); ctx.stroke(); }
+}
 function render(){
   ctx.save();
   if(G.shake>0){ ctx.translate(rnd(-G.shake,G.shake), rnd(-G.shake,G.shake)); }
@@ -1474,6 +1903,7 @@ function render(){
   drawWall();
   drawMoon();
   drawGlow();
+  drawAltar();
   drawWorkshops();
   drawTowers();
   drawUnits();
@@ -1481,6 +1911,8 @@ function render(){
   drawEnemies();
   drawCore();
   drawBell();
+  drawHeroFx();
+  drawHero();
   drawFx();
   drawPreview();
   ctx.restore();
@@ -1654,12 +2086,20 @@ cv.addEventListener('contextmenu', ev=>{
   const p=toCanvas(ev);
   const ws = G.workshops.find(w=>Math.abs(p.x-w.x)<22 && Math.abs(p.y-w.y)<20);
   if(ws){ unassignJob(ws); return; }
-  G.build=null; G.sel=null; syncShop();
+  if(G.build || G.sel){ G.build=null; G.sel=null; syncShop(); return; }
+  if(G.hero && G.hero.down<=0){                     // orden de marcha
+    G.hero.dest={x:p.x,y:p.y}; G.hero.kx=0; G.hero.ky=0;
+    for(const k in held) held[k]=false;
+  }
 });
 cv.addEventListener('click', ev=>{
   if(G.over) return;
   const p=toCanvas(ev);
   const cx=Math.floor(p.x/CELL), cy=Math.floor(p.y/CELL);
+  if(!G.build && Math.abs(p.x-ALTAR.x)<20 && Math.abs(p.y-ALTAR.y)<18){
+    if(G.phase!=='prep'){ log('El altar sólo responde entre oleadas.'); return; }
+    openPicker(); return;
+  }
   const ws = G.workshops.find(w=>Math.abs(p.x-w.x)<22 && Math.abs(p.y-w.y)<20);
   if(ws && !G.build){ assignJob(ws); G.sel=null; return; }
   if(G.build){ placeTower(G.build,cx,cy); syncShop(); return; }
@@ -1681,33 +2121,57 @@ function sell(){
   log('Estructura desmantelada (50% reembolsado).');
   G.sel=null;
 }
+const HKEY = { w:[0,-1], a:[-1,0], s:[0,1], d:[1,0],
+               arrowup:[0,-1], arrowleft:[-1,0], arrowdown:[0,1], arrowright:[1,0] };
+const held = {};
+function heroVel(){
+  const h=G.hero; if(!h) return;
+  let x=0,y=0;
+  for(const k in held) if(held[k] && HKEY[k]){ x+=HKEY[k][0]; y+=HKEY[k][1]; }
+  h.kx=x; h.ky=y;
+}
+addEventListener('keyup', ev=>{ const k=ev.key.toLowerCase(); if(HKEY[k]){ held[k]=false; heroVel(); } });
+addEventListener('blur', ()=>{ for(const k in held) held[k]=false; heroVel(); });
 addEventListener('keydown', ev=>{
   const k = ev.key.toLowerCase();
+  if(HKEY[k] && G.hero){                            // marcha del héroe
+    if(k.startsWith('arrow')) ev.preventDefault();
+    held[k]=true; heroVel();
+    if(k==='w'||k==='a'||k==='s'||k==='d') return;  // no dispares la tienda con WASD
+  }
   for(const id in TOWERS) if(TOWERS[id].key===k){
     if(TOWERS[id].villager){ placeTower('villager',0,0); syncShop(); } else selectBuild(id);
     return;
   }
   for(const id in FORGE)  if(FORGE[id].key===k){ doForge(id); return; }
-  if(k==='q') useAbility(0);
-  else if(k==='w') useAbility(1);
-  else if(k==='e') useAbility(2);
+  if(k==='z') useAbility(0);
+  else if(k==='x') useAbility(1);
+  else if(k==='c') useAbility(2);
+  else if(k==='q') heroCast();
   else if(k==='escape'){ G.build=null; G.sel=null; syncShop(); }
   else if(k==='r') toggleAlarm();
   else if(k==='v') sell();
-  else if(k==='p') G.paused=!G.paused;
+  else if(k==='p'){ if(!$('pick').classList.contains('on')) G.paused=!G.paused; }
   else if(k===' '){ ev.preventDefault(); startWave(); }
 });
 $('bnext').onclick  = ()=> startWave();
 $('bsell').onclick  = ()=> sell();
-$('bpause').onclick = ()=>{ G.paused=!G.paused; };
+$('bpause').onclick = ()=>{ if(!$('pick').classList.contains('on')) G.paused=!G.paused; };
+$('h-q').onclick = ()=>heroCast();
+$('h-up-q').onclick = ()=>heroUp('q');
+$('h-up-a').onclick = ()=>heroUp('a');
+$('h-por').onclick = ()=>{ if(G.phase==='prep') openPicker(); };
 $('ab0').onclick = ()=>useAbility(0);
 $('ab1').onclick = ()=>useAbility(1);
 $('ab2').onclick = ()=>useAbility(2);
-$('ovb').onclick = ()=>{ $('ov').classList.remove('on'); newGame(); buildShop(); buildInterior(); };
+$('ovb').onclick = ()=>{
+  $('ov').classList.remove('on'); newGame(); buildShop(); buildInterior(); buildHeroBar();
+  G.paused = true; openPicker();
+};
 
 function endGame(won){
   if(G.over) return;
-  G.over=true; G.won=won; G.paused=true;
+  G.over=true; G.won=won; G.paused=true; $('pick').classList.remove('on');
   $('ovt').textContent = won ? 'EL CASTILLO RESISTE' : 'EL CASTILLO HA CAÍDO';
   $('ovt').style.color = won ? '#7dff9b' : '#ff5f6d';
   $('ovp').innerHTML = 'Oleadas superadas: <b>'+(won?G.wave:G.wave-1)+'</b><br>Invasores destruidos: <b>'+G.kills+'</b><br>Cristales de Prisma: <b>'+G.cry+'</b>';
@@ -1732,6 +2196,8 @@ function loop(now){
     updateTowers(dt);
     updateWorkshops(dt);
     updateFolk(dt);
+    updateHero(dt);
+    updateHeroFx(dt);
     if(G.bellT>0) G.bellT-=dt;
     beamDamage(dt);
     updateEnemies(dt);
@@ -1742,11 +2208,15 @@ function loop(now){
   } else { refreshSources(); computeBeams(); }
   render();
   updateUI(dt);
+  if(G.hero) updateHeroBar();
   requestAnimationFrame(loop);
 }
 newGame();
 buildShop();
 buildInterior();
+buildHeroBar();
+G.paused = true;                                    // el reloj espera al héroe
+openPicker();
 requestAnimationFrame(loop);
 </script>
 </body>
