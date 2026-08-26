@@ -70,6 +70,26 @@
   .ab .abn{font-size:14px}
   .ab .cd{position:absolute; left:0; bottom:0; width:100%; background:rgba(0,0,0,.72); pointer-events:none}
   .ab.rdy{border-color:var(--cyan); color:var(--cyan)}
+  .res3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--line); border-bottom:1px solid var(--line)}
+  .res3 div{background:var(--panel2); padding:5px 7px}
+  .res3 b{display:block; font-size:13px; letter-spacing:1px}
+  .res3 span{font-size:8.5px; color:var(--dim); letter-spacing:.5px}
+  .int{padding:6px}
+  .bell{width:100%; display:flex; align-items:center; gap:6px; background:#151022; border:1px solid #3a2a52;
+        color:var(--txt); font-family:inherit; font-size:11px; letter-spacing:1px; padding:7px 8px; margin-bottom:6px; cursor:pointer}
+  .bell:hover{border-color:var(--amber)}
+  .bell em{margin-left:auto; font-style:normal; font-size:9px; color:var(--dim)}
+  .bell.on{background:#2a0d12; border-color:var(--red); color:var(--red); animation:ring .55s steps(2) infinite}
+  .bell.on em{color:var(--red)}
+  @keyframes ring{50%{background:#3a1218}}
+  .wrow{background:var(--panel2); border:1px solid var(--line); padding:6px; margin-bottom:5px; cursor:pointer}
+  .wrow:hover{border-color:#2f4468}
+  .wrow .nm{margin-bottom:2px}
+  .wbar{height:4px; background:#05070e; margin-top:4px; border:1px solid #16203a}
+  .wbar i{display:block; height:100%; background:var(--amber)}
+  .pips{letter-spacing:2px; font-size:11px}
+  .wst{font-size:9px; letter-spacing:1px; float:right}
+  .st-ok{color:var(--green)} .st-no{color:var(--dim)} .st-pn{color:var(--red)} .st-al{color:var(--violet)}
   .foot{padding:6px 9px; border-top:1px solid var(--line); background:#080b14; display:flex; gap:6px}
   .btn{flex:1; background:#131b2e; border:1px solid var(--line); color:var(--txt); font-family:inherit; font-size:10.5px; padding:6px; cursor:pointer; letter-spacing:1px}
   .btn:hover{border-color:var(--amber); color:var(--amber)}
@@ -106,6 +126,11 @@
       <div class="cry"><b id="r-cry">0</b><span>CRISTALES DE PRISMA</span></div>
       <div class="core"><b id="r-core">20</b><span>NÚCLEO DEL CASTILLO</span></div>
     </div>
+    <div class="res3">
+      <div><b id="r-rune">0</b><span>PIEDRAS RÚNICAS</span></div>
+      <div><b id="r-opt">0</b><span>LENTES PULIDAS</span></div>
+      <div><b id="r-folk">0</b><span>ALDEANOS L/T</span></div>
+    </div>
     <div class="stats">
       <span>OLEADA <i id="s-wave">0</i></span>
       <span>ENEMIGOS <i id="s-en">0</i></span>
@@ -119,8 +144,12 @@
       <button class="ab" id="ab1"><div class="abn">💥</div>SUPERNOVA<br><span>W</span><div class="cd" id="cd1"></div></button>
       <button class="ab" id="ab2"><div class="abn">🔷</div>ENFOQUE<br><span>E</span><div class="cd" id="cd2"></div></button>
     </div>
-    <div class="ttl">Tienda de defensas</div>
-    <div class="scroll"><div class="shop" id="shop"></div></div>
+    <div class="scroll">
+      <div class="ttl">Patio interior · producción</div>
+      <div class="int" id="int"></div>
+      <div class="ttl">Tienda de defensas</div>
+      <div class="shop" id="shop"></div>
+    </div>
     <div id="sel">Selecciona una defensa o haz clic en una estructura del mapa.</div>
     <div id="log"></div>
     <div class="foot">
@@ -179,24 +208,43 @@ const TOWERS = {
   beacon:{ key:'3', name:'FARO SOLAR CONCENTRADO', icon:'🔦', cost:{oil:70}, oilUse:1.10, hp:90,
     ds:'Haz direccional continuo. Paraliza a los enemigos oscuros y se refracta en los espejos.',
     light:60, range:320, dmg:30, rate:0, mech:true, lightSource:true },
-  gargoyle:{ key:'4', name:'GÁRGOLA DE PIEDRA', icon:'🗿', cost:{oil:50}, oilUse:0, hp:999,
-    ds:'En la luz: estatua invulnerable que frena el paso. En la oscuridad: despierta y devora.',
+  gargoyle:{ key:'4', name:'GÁRGOLA DE PIEDRA', icon:'🗿', cost:{oil:50,rune:1}, oilUse:0, hp:300,
+    ds:'En la luz: estatua invulnerable que frena el paso. En la oscuridad: despierta, devora y puede ser herida. El Cantero talla las piedras que la reparan.',
     light:0, range:76, dmg:34, rate:0.55, mech:false },
-  mirror:{ key:'5', name:'ESPEJO PRISMÁTICO', icon:'🔷', cost:{oil:20,cry:1}, oilUse:0, hp:80,
-    ds:'Clic para girarlo 20°. Divide cada haz de luz que recibe en dos direcciones.',
+  mirror:{ key:'5', name:'ESPEJO PRISMÁTICO', icon:'🔷', cost:{oil:20,opt:1}, oilUse:0, hp:80,
+    ds:'Clic para girarlo 20°. Divide cada haz en dos. El Pulidor fabrica las lentes que lo montan y lo mejoran.',
     light:34, range:0, dmg:0, rate:0, mech:true, lightSource:true },
   trap:{ key:'6', name:'TRAMPA DE PENUMBRA', icon:'💣', cost:{ess:30}, oilUse:0, hp:1,
     ds:'Oculta hasta que un enemigo iluminado entra en sombra sobre ella: explosión en cadena.',
     light:0, range:0, dmg:80, rate:0, mech:false },
   knight:{ key:'7', name:'CABALLERO DE SOMBRA', icon:'⚔', cost:{ess:55}, oilUse:0, hp:150,
     ds:'Unidad móvil. Patrulla las zonas oscuras. Débil en la luz, letal durante un eclipse.',
-    light:0, range:92, dmg:16, rate:0.5, mech:false, unit:true }
+    light:0, range:92, dmg:16, rate:0.5, mech:false, unit:true },
+  villager:{ key:'0', name:'RECLUTAR ALDEANO', icon:'🧍', cost:{oil:35}, oilUse:0, hp:46,
+    ds:'Llega al patio interior sin puesto. Asígnalo a un taller con clic, o déjalo libre para que porte cargas.',
+    light:0, range:0, dmg:0, rate:0, mech:false, villager:true }
 };
 const FORGE = {
-  lens:  { key:'8', name:'LENTE MAYOR (FORJA)', icon:'🔮', cost:{cry:2}, cap:5,
-    ds:'Forja cristales en lentes: +18% de alcance para todas las fuentes de luz.' },
+  prism: { key:'8', name:'PRISMA MAYOR (FORJA)', icon:'🔮', cost:{cry:2}, cap:5,
+    ds:'Talla los cristales en prismas: +18% de alcance para todas las fuentes de luz.' },
   refin: { key:'9', name:'REFINERÍA DE ACEITE', icon:'🛢', cost:{cry:2,oil:40}, cap:5,
     ds:'Mejora el destilado del castillo: +0.7 de aceite por segundo, permanente.' }
+};
+
+/* ---------------- Patio interior: muro, talleres y oficios --------------- */
+const WALL = { x1:150, y1:270, x2:650, y2:530 };          // recinto interior
+const inWall = (x,y)=> x>WALL.x1 && x<WALL.x2 && y>WALL.y1 && y<WALL.y2;
+
+const JOBS = {
+  press: { name:'PRENSA DE ACEITE',   icon:'🛢', col:'#ffb347', cx:6,  cy:10,
+    out:'ACEITE PURIFICADO', time:9.0, slots:3,
+    ds:'Destila aceite purificado. El portador lo lleva a una fuente de luz: la repara y engrosa la reserva.' },
+  mason: { name:'CANTERO DE RUNAS',   icon:'⛏', col:'#9fb0cc', cx:9,  cy:11,
+    out:'PIEDRA RÚNICA', time:11.0, slots:3,
+    ds:'Talla piedras rúnicas. Reparan gárgolas heridas y sin ellas no puedes tallar una nueva.' },
+  optic: { name:'PULIDOR DE ÓPTICA',  icon:'🔍', col:'#6fe3ff', cx:13, cy:10,
+    out:'LENTE PULIDA', time:13.0, slots:3,
+    ds:'Pule lentes. Montan espejos nuevos y afinan los ya colocados (+18% de haz).' }
 };
 
 /* ---------------- Enemigos ---------------------------------------------- */
@@ -214,14 +262,17 @@ function newGame(){
     oil:120, ess:40, cry:1, core:20, wave:0, kills:0,
     phase:'prep', prep:9, spawnQ:[], spawnT:0,
     towers:[], units:[], enemies:[], shots:[], fx:[], beams:[],
+    workshops:[], folk:[], stock:{rune:2, opt:1}, alarm:false, bellT:0, hired:0, lost:0,
     build:null, sel:null, paused:false, over:false, won:false,
     t:0, moonA:0, moonB:0, eclipse:0, nova:0, focus:0,
-    lens:0, refin:0, oilRate:0, msg:[],
+    prism:0, refin:0, oilRate:0, msg:[],
     abil:[{cd:0,max:45},{cd:0,max:30},{cd:0,max:20}],
     mouse:{x:-99,y:-99,cx:-1,cy:-1}, shake:0, banner:0, bannerTxt:''
   };
   buildGrid();
+  initInterior();
   log('El castillo despierta. La luna artificial gira sobre el núcleo.');
+  log('Asigna aldeanos a los talleres del patio con un <b>clic</b>. Botón derecho para relevarlos.');
   log('Construye <b>antorchas</b> para ver, y mata en la sombra para <b>esencia</b>.');
 }
 
@@ -243,12 +294,12 @@ function cellFree(cx,cy){ return cx>=0&&cy>=0&&cx<COLS&&cy<ROWS&&GRID[cy][cx]===
 
 /* ---------------- Modelo de luz ----------------------------------------- */
 const LIT = 0.60, DUSK = 0.22;   // umbrales luz / penumbra / oscuridad
-function lensMul(){ return 1 + G.lens*0.18; }
+function prismMul(){ return 1 + G.prism*0.18; }
 
 function moonLight(x,y){
   if(G.eclipse>0) return 0;
   const d = dist(x,y,MOON.x,MOON.y);
-  let base = clamp(1.14 - d/(400*lensMul()), 0, 1) * 0.92;
+  let base = clamp(1.14 - d/(400*prismMul()), 0, 1) * 0.92;
   if(base<=0) return 0;
   const a = Math.atan2(y-MOON.y, x-MOON.x);
   base *= wedge(a, G.moonA, 0.62, 0.30);
@@ -272,7 +323,7 @@ function refreshSources(){
     if(t.off || t.doused>0 || t.disabled) continue;
     if(t.type==='torch' && G.oil<=0) continue;
     if(t.type==='candle'&& G.oil<=0) continue;
-    SRC.push({x:t.x, y:t.y, r:t.def.light*lensMul(), p:t.type==='torch'?1.35:1.15, o:t});
+    SRC.push({x:t.x, y:t.y, r:t.def.light*prismMul(), p:t.type==='torch'?1.35:1.15, o:t});
   }
 }
 function lightAt(x,y,exc){
@@ -313,6 +364,12 @@ function zoneOf(l){ return l>=LIT ? 'LUZ' : (l>=DUSK ? 'PENUMBRA' : 'OSCURIDAD')
 function placeTower(type,cx,cy){
   const def = TOWERS[type];
   if(!def) return false;
+  if(def.villager){
+    if(G.folk.length>=14){ log('El patio no admite más aldeanos.'); return false; }
+    if(!pay(def.cost)){ log('Recursos insuficientes.'); return false; }
+    addVillager(); log('Un <b>aldeano</b> entra al patio buscando puesto.');
+    return true;
+  }
   if(def.unit){ // caballero de sombra: unidad libre
     if(!pay(def.cost)) { log('Recursos insuficientes.'); return false; }
     G.units.push({ type:'knight', def, x:cx*CELL+CELL/2, y:cy*CELL+CELL/2,
@@ -330,9 +387,16 @@ function placeTower(type,cx,cy){
   fxRing(t.x,t.y,34,'#ffb347');
   return true;
 }
-function cost0(c){ return {oil:c.oil||0, ess:c.ess||0, cry:c.cry||0}; }
-function canPay(c){ return G.oil>=(c.oil||0) && G.ess>=(c.ess||0) && G.cry>=(c.cry||0); }
-function pay(c){ if(!canPay(c)) return false; G.oil-=c.oil||0; G.ess-=c.ess||0; G.cry-=c.cry||0; return true; }
+function cost0(c){ return {oil:c.oil||0, ess:c.ess||0, cry:c.cry||0, rune:c.rune||0, opt:c.opt||0}; }
+function canPay(c){
+  return G.oil>=(c.oil||0) && G.ess>=(c.ess||0) && G.cry>=(c.cry||0)
+      && G.stock.rune>=(c.rune||0) && G.stock.opt>=(c.opt||0);
+}
+function pay(c){
+  if(!canPay(c)) return false;
+  G.oil-=c.oil||0; G.ess-=c.ess||0; G.cry-=c.cry||0;
+  G.stock.rune-=c.rune||0; G.stock.opt-=c.opt||0; return true;
+}
 
 function updateTowers(dt){
   let use = 0;
@@ -387,7 +451,7 @@ function computeBeams(){
   G.beams.length = 0;
   for(const t of G.towers){
     if(t.type!=='beacon'||t.dead||t.disabled||t.off) continue;
-    castBeam(t.x,t.y,t.ang,t.def.range*lensMul(),t.def.dmg*rateMul(t)*0.6,0,null);
+    castBeam(t.x,t.y,t.ang,t.def.range*prismMul(),t.def.dmg*rateMul(t)*0.6,0,null);
   }
 }
 function castBeam(x,y,a,len,dmg,depth,fromM){
@@ -405,8 +469,10 @@ function castBeam(x,y,a,len,dmg,depth,fromM){
   G.beams.push({x1:x,y1:y,x2,y2,dmg});
   if(hit){
     fxSpark(hit.x,hit.y,'#6fe3ff',2);
-    castBeam(hit.x,hit.y,hit.ang+0.42,len*0.75,dmg*0.62,depth+1,hit);
-    castBeam(hit.x,hit.y,hit.ang-0.42,len*0.75,dmg*0.62,depth+1,hit);
+    const lv = hit.lvl||0;                       // lentes pulidas montadas por el Pulidor
+    const k = 0.62*(1+lv*0.18), L = len*0.75*(1+lv*0.12);
+    castBeam(hit.x,hit.y,hit.ang+0.42,L,dmg*k,depth+1,hit);
+    castBeam(hit.x,hit.y,hit.ang-0.42,L,dmg*k,depth+1,hit);
   }
 }
 function beamDamage(dt){
@@ -439,8 +505,14 @@ function gargoyle(t,dt,l){
     t.gy = lerp(t.gy||t.y, t.y+Math.sin(t.ang)*Math.min(20,d*0.4), 0.12);
     if(t.cd<=0 && d < t.def.range){
       t.cd = t.def.rate;
-      hurt(e, t.def.dmg*(G.eclipse>0?1.6:1), 'melee');
+      const runes = t.runes||0;                       // las piedras rúnicas la endurecen
+      hurt(e, t.def.dmg*(1+runes*0.08)*(G.eclipse>0?1.6:1), 'melee');
       fxSpark(e.x,e.y,'#b07cff',5); t.flash=0.12; G.shake=Math.max(G.shake,2);
+    }
+    // despierta ya no es de piedra: la muerden de vuelta
+    if(d < t.def.range){
+      t.hp -= 11*dt;
+      if(t.hp<=0){ killTower(t,'hecha añicos; hace falta una piedra rúnica nueva'); return; }
     }
   } else { t.gx=lerp(t.gx||t.x,t.x,0.1); t.gy=lerp(t.gy||t.y,t.y,0.1); }
 }
@@ -527,6 +599,27 @@ function updateEnemies(dt){
           t.doused = 1.4; t.hp -= 16*dt;
           if(t.hp<=0) killTower(t,'devorada por la oscuridad');
         }
+      }
+    }
+    if(inWall(e.x,e.y)){                                 // ha cruzado el muro interior
+      e.inside = true;
+      e.atkCd = (e.atkCd||0) - dt;
+      const v = nearestFolk(e.x,e.y,58);
+      if(v){
+        if(e.atkCd<=0){
+          e.atkCd = 1.05;
+          v.hp -= e.def.dmg*7;
+          fxSpark(v.x,v.y,'#ff5f6d',4); G.shake=Math.max(G.shake,3);
+          if(v.hp<=0) folkDown(v);
+        }
+        spd *= 0.45;                                    // se entretiene con la presa
+      }
+    } else {
+      e.inside = false;
+      const v = nearestFolk(e.x,e.y,32);            // un portador sorprendido en campo abierto
+      if(v){
+        e.atkCd = (e.atkCd||0) - dt;
+        if(e.atkCd<=0){ e.atkCd=1.4; v.hp -= e.def.dmg*4; fxSpark(v.x,v.y,'#ff5f6d',3); if(v.hp<=0) folkDown(v); }
       }
     }
     if(e.type==='moth'){
@@ -706,6 +799,210 @@ function useAbility(i){
   }
 }
 
+/* ============================================================
+   PATIO INTERIOR: talleres, artesanos, portadores y campana
+   ============================================================ */
+function initInterior(){
+  G.workshops = [];
+  for(const job in JOBS){
+    const d = JOBS[job];
+    const w = { job, def:d, cx:d.cx, cy:d.cy, x:d.cx*CELL+CELL/2, y:d.cy*CELL+CELL/2,
+                prog:0, queue:0, panic:false, light:1, workers:0, staff:0, made:0 };
+    GRID[w.cy][w.cx] = 2;                       // el taller ocupa la casilla
+    G.workshops.push(w);
+  }
+  G.folk = [];
+  for(let i=0;i<5;i++) addVillager();
+  // los dos primeros ya nacen con oficio para que la cadena arranque
+  assignJob(G.workshops[0]); assignJob(G.workshops[1]);
+}
+function addVillager(){
+  const a = rnd(0,6.283), r = rnd(46,92);
+  G.folk.push({ x:CORE.x+Math.cos(a)*r, y:CORE.y+Math.sin(a)*r, ang:a,
+    job:null, st:'idle', hp:46, mhp:46, cd:0, crate:null, wob:rnd(0,6.283), step:0 });
+  G.hired++;
+}
+function wsOf(job){ return G.workshops.find(w=>w.job===job); }
+function idleFolk(){ return G.folk.filter(v=>!v.job && v.st==='idle'); }
+
+function assignJob(w){
+  const free = idleFolk()[0] || G.folk.find(v=>!v.job);
+  if(!free){ log('No hay aldeanos libres. Recluta uno con la tecla <b>0</b>.'); return; }
+  if(G.folk.filter(v=>v.job===w.job).length >= w.def.slots){ log(w.def.name+' está al completo.'); return; }
+  free.job = w.job; free.st = 'work';
+  log('Aldeano asignado a la <b>'+w.def.name+'</b>.');
+}
+function unassignJob(w){
+  const v = G.folk.filter(x=>x.job===w.job).pop();
+  if(!v){ return; }
+  v.job = null; if(v.st!=='carry') v.st='idle';
+  log('Aldeano relevado de la '+w.def.name+'.');
+}
+
+/* ---- producción ---------------------------------------------------------- */
+function updateWorkshops(dt){
+  for(const w of G.workshops){
+    w.light = lightAt(w.x,w.y);
+    const wasPanic = w.panic;
+    w.panic = w.light < DUSK;                   // sin luz, los artesanos entran en pánico
+    if(w.panic && !wasPanic && !G.alarm && w.staff>0)
+      log('<b>'+w.def.name+'</b> a oscuras: los artesanos entran en pánico. Ilumina el patio.');
+    w.staff = G.folk.filter(v=>v.job===w.job).length;
+    w.workers = G.folk.filter(v=>v.job===w.job && v.st==='work' && dist(v.x,v.y,w.x,w.y)<32).length;
+    w.state = G.alarm ? 'ALARMA' : (w.panic ? 'PÁNICO' : (w.workers? 'PRODUCE' : (w.staff?'EN CAMINO':'VACÍO')));
+    if(G.alarm || w.panic || w.workers===0) continue;
+    w.prog += (w.workers/w.def.time)*dt;
+    if(w.prog>=1){ w.prog -= 1; w.queue++; w.made++; fxText(w.x,w.y-24,w.def.out,w.def.col); }
+  }
+  dispatch();
+}
+/* un portador recoge la carga y sale del patio hacia el perímetro */
+function dispatch(){
+  for(const w of G.workshops){
+    while(w.queue>0){
+      const v = idleFolk()[0] || G.folk.find(x=>x.job===w.job && x.st==='work');
+      if(!v) break;                             // nadie libre: la carga espera en el taller
+      const dest = crateTarget(w.job);
+      v.crate = { job:w.job, col:w.def.col, dest };
+      v.st = 'carry'; w.queue--;
+    }
+  }
+}
+function crateTarget(job){
+  if(job==='press'){
+    let best=null, score=1e9;
+    for(const t of G.towers){
+      if(t.dead || !t.def.lightSource || t.type==='mirror') continue;
+      const sc = (t.hp/t.mhp)*1000 - dist(t.x,t.y,CORE.x,CORE.y)*0.2;
+      if(sc<score){ score=sc; best=t; }
+    }
+    return best;
+  }
+  if(job==='mason'){
+    let best=null, worst=1;
+    for(const t of G.towers){
+      if(t.dead || t.type!=='gargoyle') continue;
+      const r=t.hp/t.mhp; if(r<worst && r<0.999){ worst=r; best=t; }
+    }
+    return best;
+  }
+  let best=null, lo=99;
+  for(const t of G.towers){
+    if(t.dead || t.type!=='mirror') continue;
+    const lv=t.lvl||0; if(lv<3 && lv<lo){ lo=lv; best=t; }
+  }
+  return best;
+}
+function deliver(v){
+  const c = v.crate, t = c.dest;
+  if(c.job==='press'){
+    if(t && !t.dead){
+      t.hp = t.mhp; t.doused = 0; G.oil += 14;
+      fxText(t.x,t.y-26,'+14 ACEITE PURIFICADO','#ffb347'); fxRing(t.x,t.y,30,'#ffb347');
+    } else { G.oil += 14; fxText(CORE.x,CORE.y-40,'+14 ACEITE','#ffb347'); }
+  } else if(c.job==='mason'){
+    if(t && !t.dead){
+      t.hp = Math.min(t.mhp, t.hp+160); t.runes = Math.min(5,(t.runes||0)+1);
+      fxText(t.x,t.y-26,'RUNA GRABADA +8% DAÑO','#9fb0cc'); fxRing(t.x,t.y,30,'#9fb0cc');
+    } else { G.stock.rune++; fxText(CORE.x,CORE.y-40,'+1 PIEDRA RÚNICA','#9fb0cc'); }
+  } else {
+    if(t && !t.dead){
+      t.lvl = Math.min(3,(t.lvl||0)+1);
+      fxText(t.x,t.y-26,'ESPEJO PULIDO Nv'+t.lvl,'#6fe3ff'); fxRing(t.x,t.y,30,'#6fe3ff');
+    } else { G.stock.opt++; fxText(CORE.x,CORE.y-40,'+1 LENTE PULIDA','#6fe3ff'); }
+  }
+  v.crate = null;
+  v.st = v.job ? 'back' : 'idle';
+}
+function folkDown(v){
+  v.down = true; G.lost++;
+  fxSpark(v.x,v.y,'#ff5f6d',10);
+  log('<b>Un aldeano ha caído</b> en el patio' + (v.crate?' y su carga se ha perdido.':'.'));
+}
+function nearestFolk(x,y,r){
+  let best=null, bd=r;
+  for(const v of G.folk){ if(v.down) continue; const d=dist(x,y,v.x,v.y); if(d<bd){ bd=d; best=v; } }
+  return best;
+}
+function nearestInfiltrator(x,y,r){
+  let best=null, bd=r;
+  for(const e of G.enemies){
+    if(e.dead || !inWall(e.x,e.y)) continue;
+    const d=dist(x,y,e.x,e.y); if(d<bd){ bd=d; best=e; }
+  }
+  return best;
+}
+
+/* ---- movimiento de los aldeanos ------------------------------------------ */
+function walk(v,tx,ty,spd,dt){
+  const d = dist(v.x,v.y,tx,ty);
+  if(d<4) return true;
+  let ax=(tx-v.x)/d, ay=(ty-v.y)/d;
+  if(!G.alarm){                                   // esquivan a los invasores cercanos
+    const e = nearestEnemy(v.x,v.y,74);
+    if(e){ const dd=Math.max(12,dist(v.x,v.y,e.x,e.y)); ax += (v.x-e.x)/dd*1.5; ay += (v.y-e.y)/dd*1.5; }
+  }
+  const m = Math.hypot(ax,ay)||1;
+  v.x += ax/m*spd*dt; v.y += ay/m*spd*dt;
+  v.ang = Math.atan2(ay,ax); v.step += spd*dt;
+  v.x = clamp(v.x,8,W-8); v.y = clamp(v.y,8,H-8);
+  return d<4;
+}
+function updateFolk(dt){
+  for(const v of G.folk){
+    if(v.down) continue;
+    if(v.hp < v.mhp) v.hp = Math.min(v.mhp, v.hp + 2.2*dt);   // se recuperan despacio
+    if(G.alarm){ militia(v,dt); continue; }
+    if(v.st==='militia') v.st = v.crate ? 'carry' : (v.job?'work':'idle');
+
+    if(v.st==='carry' && v.crate){
+      const t = v.crate.dest;
+      const tx = (t && !t.dead) ? t.x : CORE.x, ty = (t && !t.dead) ? t.y : CORE.y;
+      if(walk(v,tx,ty,64,dt)) deliver(v);
+    } else if(v.st==='back' || v.st==='work'){
+      const w = wsOf(v.job);
+      if(!w){ v.st='idle'; continue; }
+      if(walk(v,w.x,w.y,58,dt)) v.st='work';
+    } else {                                        // ocioso: ronda el núcleo
+      v.wob += dt*0.7;
+      walk(v, CORE.x+Math.cos(v.wob)*70, CORE.y+Math.sin(v.wob*1.3)*54, 34, dt);
+    }
+  }
+  G.folk = G.folk.filter(v=>!v.down);
+}
+/* ---- campana de alarma: artesanos con ballesta de mano ------------------- */
+function militia(v,dt){
+  v.st = 'militia';
+  const e = nearestInfiltrator(v.x,v.y,340);
+  if(e){
+    v.ang = Math.atan2(e.y-v.y, e.x-v.x);
+    const d = dist(v.x,v.y,e.x,e.y);
+    if(d > 110) walk(v,e.x,e.y,70,dt);
+    v.cd -= dt;
+    if(v.cd<=0 && d < 150){
+      v.cd = 0.9;
+      const a = v.ang + rnd(-0.09,0.09);
+      G.shots.push({x:v.x,y:v.y,vx:Math.cos(a)*430,vy:Math.sin(a)*430,dmg:11,life:0.8,col:'#dfe9ff'});
+    }
+  } else {                                          // sin infiltrados: formación junto al núcleo
+    const i = G.folk.indexOf(v), a = i/Math.max(1,G.folk.length)*6.283;
+    walk(v, CORE.x+Math.cos(a)*62, CORE.y+Math.sin(a)*62, 58, dt);
+    v.ang = a;
+  }
+}
+function toggleAlarm(force){
+  G.alarm = (force===undefined) ? !G.alarm : force;
+  G.bellT = 0.8;
+  if(G.alarm){
+    for(const v of G.folk){ if(v.crate){ const w=wsOf(v.crate.job); if(w) w.queue++; v.crate=null; } v.st='militia'; v.cd=0.35; }
+    log('<b>¡CAMPANA DE ALARMA!</b> Los artesanos sueltan las herramientas y toman las ballestas.');
+    fxRing(CORE.x,CORE.y,260,'#ff5f6d'); G.shake=Math.max(G.shake,6);
+  } else {
+    for(const v of G.folk) v.st = v.job ? 'back' : 'idle';
+    log('Campana en silencio: los aldeanos vuelven al aceite y a la piedra rúnica.');
+  }
+}
+
 /* ============================ RENDER ==================================== */
 const LS = 20, LW = Math.ceil(W/LS)+1, LH = Math.ceil(H/LS)+1;
 const lcv = document.createElement('canvas'); lcv.width=LW; lcv.height=LH;
@@ -739,6 +1036,9 @@ function drawGround(){
       ctx.strokeRect(x+1.5,y+1.5,CELL-3,CELL-3);
     }
   }
+  // enlosado del patio interior
+  ctx.fillStyle='rgba(60,88,140,.10)';
+  ctx.fillRect(WALL.x1,WALL.y1,WALL.x2-WALL.x1,WALL.y2-WALL.y1);
   // camino de los invasores
   ctx.lineJoin='round'; ctx.lineCap='round';
   ctx.strokeStyle='#080c16'; ctx.lineWidth=44; ctx.beginPath();
@@ -751,6 +1051,78 @@ function drawGround(){
   ctx.setLineDash([]); ctx.lineDashOffset=0;
 }
 
+function drawWall(){
+  ctx.save();
+  const w=WALL.x2-WALL.x1, h=WALL.y2-WALL.y1;
+  ctx.strokeStyle = G.alarm ? 'rgba(255,95,109,.55)' : 'rgba(125,255,155,.26)';
+  ctx.lineWidth = 2; ctx.setLineDash([9,7]);
+  ctx.strokeRect(WALL.x1,WALL.y1,w,h);
+  ctx.setLineDash([]);
+  // almenas del muro exterior del patio
+  ctx.fillStyle = G.alarm ? 'rgba(255,95,109,.45)' : 'rgba(125,255,155,.22)';
+  for(let x=WALL.x1; x<=WALL.x2; x+=25){ ctx.fillRect(x-2,WALL.y1-3,5,6); ctx.fillRect(x-2,WALL.y2-3,5,6); }
+  for(let y=WALL.y1; y<=WALL.y2; y+=25){ ctx.fillRect(WALL.x1-3,y-2,6,5); ctx.fillRect(WALL.x2-3,y-2,6,5); }
+  ctx.fillStyle = G.alarm ? 'rgba(255,95,109,.75)' : 'rgba(125,255,155,.35)';
+  ctx.font='9px "Courier New",monospace'; ctx.textAlign='left';
+  ctx.fillText(G.alarm?'PATIO INTERIOR · ALARMA':'PATIO INTERIOR', WALL.x1+6, WALL.y1-6);
+  ctx.restore();
+}
+function drawWorkshops(){
+  for(const w of G.workshops){
+    ctx.save(); ctx.translate(w.x,w.y);
+    const dim = clamp(0.72+w.light*0.28,0.72,1);
+    ctx.globalAlpha = dim;
+    ctx.fillStyle='#101828'; ctx.fillRect(-18,-16,36,32);
+    ctx.strokeStyle = w.panic ? '#ff5f6d' : (w.workers? w.def.col : '#2b3a58');
+    ctx.lineWidth=2; ctx.strokeRect(-18,-16,36,32);
+    ctx.fillStyle = w.def.col; ctx.fillRect(-18,-16,36,4);      // tejado
+    ctx.globalAlpha=1;
+    ctx.font='14px monospace'; ctx.textAlign='center';
+    ctx.fillText(w.def.icon, 0, 6);
+    // artesanos en plantilla
+    for(let i=0;i<w.staff;i++){ ctx.fillStyle = i<w.workers ? w.def.col : '#3d4a66'; ctx.fillRect(-16+i*7, 11, 5,3); }
+    // barra de producción
+    if(w.prog>0){ ctx.fillStyle='#05070e'; ctx.fillRect(-18,17,36,3);
+      ctx.fillStyle=w.def.col; ctx.fillRect(-18,17,36*clamp(w.prog,0,1),3); }
+    if(w.queue>0){ ctx.fillStyle='#fff'; ctx.font='9px monospace'; ctx.fillText('📦'+w.queue, 0, -20); }
+    if(w.panic && !G.alarm){ ctx.fillStyle='#ff5f6d'; ctx.font='bold 9px "Courier New",monospace'; ctx.fillText('¡PÁNICO!',0,-20); }
+    ctx.restore();
+  }
+}
+function drawFolk(){
+  for(const v of G.folk){
+    if(v.down) continue;
+    const bob = Math.sin(v.step*0.35)*1.6;
+    ctx.save(); ctx.translate(v.x, v.y+bob);
+    const col = G.alarm ? '#ff8f8f' : (v.job ? JOBS[v.job].col : '#cfe0ff');
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle='#0a0f1c'; ctx.beginPath(); ctx.arc(0,0,7,0,6.283); ctx.fill();
+    ctx.strokeStyle=col; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle=col; ctx.fillRect(-2,-6,4,4);
+    if(G.alarm){                                   // ballesta de mano
+      ctx.rotate(v.ang);
+      ctx.strokeStyle='#dfe9ff'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(4,0); ctx.lineTo(11,0); ctx.moveTo(8,-4); ctx.lineTo(8,4); ctx.stroke();
+    } else if(v.crate){                            // caja al hombro
+      ctx.fillStyle=v.crate.col; ctx.fillRect(-5,-13,10,7);
+      ctx.strokeStyle='#05070e'; ctx.lineWidth=1; ctx.strokeRect(-5,-13,10,7);
+    }
+    ctx.restore();
+    if(v.hp<v.mhp){ ctx.fillStyle='#000'; ctx.fillRect(v.x-7,v.y+9,14,2);
+      ctx.fillStyle='#7dff9b'; ctx.fillRect(v.x-7,v.y+9,14*clamp(v.hp/v.mhp,0,1),2); }
+  }
+}
+function drawBell(){
+  const x = CORE.x + 58, y = CORE.y - 52;
+  ctx.save(); ctx.translate(x,y);
+  if(G.alarm) ctx.rotate(Math.sin(G.t*16)*0.28);
+  ctx.font='16px monospace'; ctx.textAlign='center';
+  ctx.globalAlpha = G.alarm ? 1 : 0.65;
+  ctx.fillText('🔔',0,6);
+  ctx.restore();
+  if(G.bellT>0){ ctx.strokeStyle='rgba(255,95,109,'+clamp(G.bellT,0,1)+')'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(x,y,20+(0.8-G.bellT)*70,0,6.283); ctx.stroke(); }
+}
 function drawPathHint(){
   ctx.save();
   ctx.lineJoin='round'; ctx.lineCap='round';
@@ -791,7 +1163,7 @@ function drawCore(){
 function drawMoon(){
   ctx.save();
   ctx.globalCompositeOperation='lighter';
-  const g = ctx.createRadialGradient(MOON.x,MOON.y,2,MOON.x,MOON.y,110*lensMul());
+  const g = ctx.createRadialGradient(MOON.x,MOON.y,2,MOON.x,MOON.y,110*prismMul());
   const pw = G.eclipse>0?0.02:0.20;
   g.addColorStop(0,'rgba(210,230,255,'+pw+')'); g.addColorStop(1,'rgba(120,160,255,0)');
   ctx.fillStyle=g; ctx.fillRect(MOON.x-200,MOON.y-200,400,400);
@@ -964,7 +1336,7 @@ function drawPreview(){
   ctx.globalAlpha=0.75;
   ctx.strokeStyle = (ok&&afford) ? '#7dff9b' : '#ff5f6d'; ctx.lineWidth=2;
   ctx.strokeRect(x-CELL/2+2,y-CELL/2+2,CELL-4,CELL-4);
-  if(def.light){ ctx.strokeStyle='rgba(255,179,71,.5)'; ctx.setLineDash([4,5]); ctx.beginPath(); ctx.arc(x,y,def.light*lensMul(),0,6.283); ctx.stroke(); ctx.setLineDash([]); }
+  if(def.light){ ctx.strokeStyle='rgba(255,179,71,.5)'; ctx.setLineDash([4,5]); ctx.beginPath(); ctx.arc(x,y,def.light*prismMul(),0,6.283); ctx.stroke(); ctx.setLineDash([]); }
   if(def.range){ ctx.strokeStyle='rgba(111,227,255,.45)'; ctx.beginPath(); ctx.arc(x,y,def.range,0,6.283); ctx.stroke(); }
   ctx.globalAlpha=1; ctx.font='16px monospace'; ctx.textAlign='center'; ctx.fillStyle='#fff';
   ctx.fillText(def.icon,x,y+6);
@@ -1003,12 +1375,16 @@ function render(){
   drawGround();
   drawDarkness();
   drawPathHint();
+  drawWall();
   drawMoon();
   drawGlow();
+  drawWorkshops();
   drawTowers();
   drawUnits();
+  drawFolk();
   drawEnemies();
   drawCore();
+  drawBell();
   drawFx();
   drawPreview();
   ctx.restore();
@@ -1027,12 +1403,14 @@ function buildShop(){
     const cs=[]; if(c.oil)cs.push('<span class="c-oil">'+c.oil+' aceite</span>');
     if(c.ess)cs.push('<span class="c-ess">'+c.ess+' esencia</span>');
     if(c.cry)cs.push('<span class="c-cry">'+c.cry+' cristal'+(c.cry>1?'es':'')+'</span>');
+    if(c.rune)cs.push('<span style="color:#9fb0cc">'+c.rune+' piedra rúnica</span>');
+    if(c.opt)cs.push('<span class="c-cry">'+c.opt+' lente pulida</span>');
     const up = def.oilUse ? '<span class="c-up"> · -'+def.oilUse.toFixed(2)+' aceite/s</span>' : '';
     b.innerHTML = '<div class="ico">'+def.icon+'</div><div style="flex:1">'+
       '<div class="nm"><span>'+def.name+'</span><span class="key">'+def.key+'</span></div>'+
       '<div class="ds">'+def.ds+'</div>'+
       '<div class="cost">'+cs.join(' + ')+up+'<span class="c-up" data-lv></span></div></div>';
-    b.onclick = ()=> forge ? doForge(id) : selectBuild(id);
+    b.onclick = ()=> forge ? doForge(id) : (def.villager ? (placeTower('villager',0,0), syncShop()) : selectBuild(id));
     wrap.appendChild(b);
   };
   for(const k in TOWERS) mk(k,TOWERS[k],false);
@@ -1040,12 +1418,56 @@ function buildShop(){
   wrap.appendChild(t);
   for(const k in FORGE) mk(k,FORGE[k],true);
 }
+function buildInterior(){
+  const wrap = $('int'); wrap.innerHTML = '';
+  const bell = document.createElement('button');
+  bell.className='bell'; bell.id='bellbtn';
+  bell.innerHTML = '🔔 CAMPANA DE ALARMA <span class="key">R</span><em id="bellst">EN SILENCIO</em>';
+  bell.onclick = ()=> toggleAlarm();
+  wrap.appendChild(bell);
+  for(const w of G.workshops){
+    const d = document.createElement('div');
+    d.className='wrow'; d.id='ws-'+w.job;
+    d.innerHTML = '<div class="nm"><span style="color:'+w.def.col+'">'+w.def.icon+' '+w.def.name+'</span>'+
+                  '<span class="wst" data-st></span></div>'+
+                  '<div class="ds">'+w.def.ds+'</div>'+
+                  '<div class="ds" style="margin-top:3px">Artesanos <span class="pips" data-pips></span>'+
+                  ' · <span data-out></span></div>'+
+                  '<div class="wbar"><i data-bar style="width:0%;background:'+w.def.col+'"></i></div>';
+    d.onclick = ()=> assignJob(w);
+    d.oncontextmenu = ev=>{ ev.preventDefault(); unassignJob(w); };
+    d.title = 'Clic: asignar aldeano · Clic derecho: relevar';
+    wrap.appendChild(d);
+  }
+  const help = document.createElement('div');
+  help.className='ds'; help.style.padding='2px 2px 4px';
+  help.textContent = 'Los portadores salen del patio hacia las torres del perímetro. Sin luz, los talleres entran en pánico.';
+  wrap.appendChild(help);
+}
+function updateInterior(){
+  const bell = $('bellbtn'); if(!bell) return;
+  bell.classList.toggle('on', G.alarm);
+  const inf = G.enemies.filter(e=>!e.dead && inWall(e.x,e.y)).length;
+  $('bellst').textContent = G.alarm ? ('BALLESTAS · '+inf+' INFILTRADOS') : (inf? ('¡'+inf+' INFILTRADOS!') : 'EN SILENCIO');
+  if(!G.alarm && inf>0) $('bellst').style.color='#ff5f6d'; else $('bellst').style.color='';
+  for(const w of G.workshops){
+    const d = $('ws-'+w.job); if(!d) continue;
+    let pips=''; for(let i=0;i<w.def.slots;i++) pips += i<w.staff ? '●' : '○';
+    d.querySelector('[data-pips]').textContent = pips;
+    d.querySelector('[data-pips]').style.color = w.def.col;
+    d.querySelector('[data-bar]').style.width = (clamp(w.prog,0,1)*100)+'%';
+    d.querySelector('[data-out]').textContent = w.def.out+' ×'+w.made + (w.queue? ' · '+w.queue+' en espera':'');
+    const st = d.querySelector('[data-st]');
+    st.textContent = w.state;
+    st.className = 'wst ' + (w.state==='PRODUCE'?'st-ok': w.state==='PÁNICO'?'st-pn': w.state==='ALARMA'?'st-al':'st-no');
+  }
+}
 function doForge(id){
   const f=FORGE[id];
-  const lv = id==='lens'?G.lens:G.refin;
+  const lv = id==='prism'?G.prism:G.refin;
   if(lv>=f.cap){ log('Mejora al máximo.'); return; }
   if(!pay(f.cost)){ log('Faltan cristales para forjar.'); return; }
-  if(id==='lens'){ G.lens++; log('<b>Lente mayor</b> forjada: alcance de luz +18%.'); }
+  if(id==='prism'){ G.prism++; log('<b>Prisma mayor</b> tallado: alcance de luz +18%.'); }
   else { G.refin++; log('<b>Refinería</b> ampliada: +0.7 aceite/s.'); }
   fxRing(CORE.x,CORE.y,120,'#6fe3ff');
 }
@@ -1061,7 +1483,7 @@ function syncShop(){
     b.classList.toggle('sel', !forge && G.build===id);
     let ok = canPay(def.cost);
     if(forge){
-      const lv = id==='lens'?G.lens:G.refin;
+      const lv = id==='prism'?G.prism:G.refin;
       b.querySelector('[data-lv]').textContent = ' · NIVEL '+lv+'/'+def.cap;
       if(lv>=def.cap) ok=false;
     }
@@ -1077,6 +1499,10 @@ function updateUI(dt){
   $('r-ess').textContent = Math.floor(G.ess);
   $('r-cry').textContent = G.cry;
   $('r-core').textContent = Math.max(0,G.core);
+  $('r-rune').textContent = G.stock.rune;
+  $('r-opt').textContent  = G.stock.opt;
+  $('r-folk').textContent = idleFolk().length + '/' + G.folk.length;
+  updateInterior();
   $('s-wave').textContent = G.wave;
   $('s-en').textContent = G.enemies.length + (G.spawnQ?G.spawnQ.length:0);
   $('s-kill').textContent = G.kills;
@@ -1119,11 +1545,19 @@ cv.addEventListener('mousemove', ev=>{
   G.mouse.cx=Math.floor(p.x/CELL); G.mouse.cy=Math.floor(p.y/CELL);
 });
 cv.addEventListener('mouseleave', ()=>{ G.mouse.x=-99; G.mouse.y=-99; G.mouse.cx=-1; G.mouse.cy=-1; });
-cv.addEventListener('contextmenu', ev=>{ ev.preventDefault(); G.build=null; G.sel=null; syncShop(); });
+cv.addEventListener('contextmenu', ev=>{
+  ev.preventDefault();
+  const p=toCanvas(ev);
+  const ws = G.workshops.find(w=>Math.abs(p.x-w.x)<22 && Math.abs(p.y-w.y)<20);
+  if(ws){ unassignJob(ws); return; }
+  G.build=null; G.sel=null; syncShop();
+});
 cv.addEventListener('click', ev=>{
   if(G.over) return;
   const p=toCanvas(ev);
   const cx=Math.floor(p.x/CELL), cy=Math.floor(p.y/CELL);
+  const ws = G.workshops.find(w=>Math.abs(p.x-w.x)<22 && Math.abs(p.y-w.y)<20);
+  if(ws && !G.build){ assignJob(ws); G.sel=null; return; }
   if(G.build){ placeTower(G.build,cx,cy); syncShop(); return; }
   let hit=null;
   for(const t of G.towers){ if(!t.dead && dist(p.x,p.y,t.x,t.y)<22) hit=t; }
@@ -1145,12 +1579,16 @@ function sell(){
 }
 addEventListener('keydown', ev=>{
   const k = ev.key.toLowerCase();
-  for(const id in TOWERS) if(TOWERS[id].key===k){ selectBuild(id); return; }
+  for(const id in TOWERS) if(TOWERS[id].key===k){
+    if(TOWERS[id].villager){ placeTower('villager',0,0); syncShop(); } else selectBuild(id);
+    return;
+  }
   for(const id in FORGE)  if(FORGE[id].key===k){ doForge(id); return; }
   if(k==='q') useAbility(0);
   else if(k==='w') useAbility(1);
   else if(k==='e') useAbility(2);
   else if(k==='escape'){ G.build=null; G.sel=null; syncShop(); }
+  else if(k==='r') toggleAlarm();
   else if(k==='v') sell();
   else if(k==='p') G.paused=!G.paused;
   else if(k===' '){ ev.preventDefault(); startWave(); }
@@ -1161,7 +1599,7 @@ $('bpause').onclick = ()=>{ G.paused=!G.paused; };
 $('ab0').onclick = ()=>useAbility(0);
 $('ab1').onclick = ()=>useAbility(1);
 $('ab2').onclick = ()=>useAbility(2);
-$('ovb').onclick = ()=>{ $('ov').classList.remove('on'); newGame(); buildShop(); };
+$('ovb').onclick = ()=>{ $('ov').classList.remove('on'); newGame(); buildShop(); buildInterior(); };
 
 function endGame(won){
   if(G.over) return;
@@ -1188,6 +1626,9 @@ function loop(now){
     refreshSources();
     computeBeams();
     updateTowers(dt);
+    updateWorkshops(dt);
+    updateFolk(dt);
+    if(G.bellT>0) G.bellT-=dt;
     beamDamage(dt);
     updateEnemies(dt);
     updateUnits(dt);
@@ -1201,6 +1642,7 @@ function loop(now){
 }
 newGame();
 buildShop();
+buildInterior();
 requestAnimationFrame(loop);
 </script>
 </body>
